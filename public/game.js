@@ -53,8 +53,8 @@ function play(){
     document.querySelector('#next').disabled=!selected
   }
   root.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{answers[q.id]=b.dataset.id;sync()})
-  on('prev',()=>{if(index){index--;play()}else intro()})
-  on('next',e=>{if(e.detail>1||!answers[q.id])return;if(index===dept.questions.length-1)result();else{index++;play()}})
+  on('prev',e=>{if(!e.currentTarget.isConnected||e.detail>1)return;if(index){index--;play()}else intro()})
+  on('next',e=>{if(!e.currentTarget.isConnected||e.detail>1||!answers[q.id])return;if(index===dept.questions.length-1)result();else{index++;play()}})
   sync()
 }
 function result(){
