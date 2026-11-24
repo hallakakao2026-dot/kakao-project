@@ -35,6 +35,17 @@
   padding: .5rem .8rem;
   background: #f2f8ff;
 }
-.choice[aria-pressed=true][data-grade=correct]::after {content: ' ✓'; color: #106644; font-weight: 900;}
 .choice[aria-pressed=true][data-grade=incorrect] {background: #fff0f0; border-color: #b02335;}
-.choice[aria-pressed=true][data-grade=incorrect]::after {content: ' ✕'; color: #ad152c; font-weight: 900;}
+
+.choice[aria-pressed=true][data-grade]::after {
+  content: "";
+  display: inline-block;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-inline-start: .5rem;
+  vertical-align: middle;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.choice[data-grade=correct]::after {background-image: url("./assets/grade-correct.svg");}
+.choice[data-grade=incorrect]::after {background-image: url("./assets/grade-incorrect.svg");}
