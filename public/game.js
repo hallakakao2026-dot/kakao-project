@@ -81,7 +81,7 @@ function play(){
 }
 function result(){
   const rows=summary(dept,answers)
-  view('<section class="panel inner"><img class="banner" src="./assets/complete.webp" alt=""><p class="eyebrow">'+status()+'</p><h1>'+escape(nickname)+'님의 체험 기록</h1><p><strong>'+escape(dept.name)+'</strong> · '+rows.length+' / '+dept.questions.length+'문항 완료</p>'+dialog('끝까지 함께해 줘서 고마워! 네가 고른 답을 돌아볼까?')+'<h2>나의 선택 내역</h2><ol class="resultlist">'+rows.map(r=>'<li><strong>'+escape(r.title)+'</strong>'+escape(r.text)+'</li>').join('')+'</ol><p class="feedback">'+escape(analysisText())+'</p><div class="sheet">'+button('save','결과 이미지 저장',true)+button('again','다시 체험')+button('other','다른 학과 선택')+button('booth','직접 상담해 보기')+'</div><div id="notice" role="status"></div></section>')
+  view('<section class="panel inner"><img class="banner" src="./assets/complete.webp" alt=""><p class="eyebrow">'+status()+'</p><h1>'+escape(nickname)+'님의 체험 기록</h1><p><strong>'+escape(dept.name)+'</strong></p>'+dialog('끝까지 함께해 줘서 고마워! 네가 고른 답을 돌아볼까?')+'<h2>나의 선택 내역</h2><ol class="resultlist">'+rows.map(r=>'<li><strong>'+escape(r.title)+'</strong>'+escape(r.text)+'</li>').join('')+'</ol><p class="feedback">'+escape(analysisText())+'</p><div class="sheet">'+button('save','결과 이미지 저장',true)+button('again','다시 체험')+button('other','다른 학과 선택')+button('booth','직접 상담해 보기')+'</div><div id="notice" role="status"></div></section>')
   on('again',restart);on('other',selectDept);on('booth',()=>showBooths(root,dept,result,answers))
   on('save',async e=>{
     const btn=e.currentTarget,notice=document.querySelector('#notice')
