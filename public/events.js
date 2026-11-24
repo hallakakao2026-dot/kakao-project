@@ -18,7 +18,10 @@ function page(root, title, backLabel, back) {
   const section = element('section', undefined, 'panel event-view');
   const heading = element('h1', title);
   heading.tabIndex = -1;
-  section.append(heading);
+  const banner = element('img', undefined, 'banner');
+  banner.src = title === '학과 상담 부스 안내' ? './assets/paths.webp' : './assets/schedule.webp';
+  banner.alt = '';
+  section.append(banner, heading);
   root.replaceChildren(section);
   heading.focus();
   const body = element('div', undefined, 'event-body');

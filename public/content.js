@@ -1,7 +1,7 @@
 // Display names are planning labels. IDs are stable references used in answers and booths.
 export const CONTENT_VERSION = 'campus-demo-1';
 export const guide = { name: '지우', portrait: './assets/jiwoo.png' };
-const campus = './assets/campus.png';
+
 const catalog = [
   ['welfare', '사회복지학과', '이웃의 이야기', '마을 이야기 카드'],
   ['open-major', '자유전공학과', '관심 분야 탐색', '관심 분야 카드'],
@@ -17,11 +17,11 @@ function choice(id, text, reaction, explanation) {
   return { id, text, reaction, explanation, preference: null };
 }
 
-function makeDemoQuestions(activity, card) {
+function makeDemoQuestions(departmentId, activity, card) {
   function question(id, title, lesson, scene, prompt, choices, recommended) {
     return {
       id, course: '시연용 가상 활동', title, lesson, scene, prompt,
-      background: campus, portrait: guide.portrait, choices, recommended,
+      background: departmentId === 'rail' ? './assets/postcard.webp' : './assets/intro-'+departmentId+'.webp', portrait: guide.portrait, choices, recommended,
     };
   }
   return [
@@ -59,7 +59,7 @@ function makeDemoQuestions(activity, card) {
 }
 
 export const demoContent = Object.fromEntries(catalog.map(([id, , activity, card]) =>
-  [id, makeDemoQuestions(activity, card)]));
+  [id, makeDemoQuestions(id, activity, card)]));
 export const finalContent = {};
 export const finalIntros = {};
 // Set each department independently to 'final' when approved questions are ready.
@@ -73,7 +73,7 @@ export const departments = catalog.map(([id, name, activity, card]) => {
     ? '오늘은 ‘' + activity + '’ 활동이야. 수첩에 적힌 ‘' + card + '’부터 찾아보자!'
     : finalIntros[id] ?? '반가워! 함께 ' + name + ' 체험을 시작해 보자.';
   return { id, name, intro,
-    background: campus, portrait: guide.portrait,
+    icon: './assets/icon-'+id+'.webp', background: './assets/intro-'+id+'.webp', portrait: guide.portrait,
     status: questions.length ? mode : 'unavailable', questions };
 });
 

@@ -19,20 +19,19 @@ function button(id,label,primary=false) {
 }
 const on = (id,fn) => document.getElementById(id).onclick = fn
 function home() {
-  view('<section class="window"><div class="windowbar"><span>▦ &nbsp; CAMPUS ADVENTURE</span><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span></div><div class="landscape"><img class="scenery" src="./assets/campus.png" alt="파란 하늘 아래 시계탑과 꽃길이 펼쳐진 도트 캠퍼스"><span class="location">'+icon('pin')+'한라 캠퍼스</span></div><div class="welcome"><div><p class="eyebrow">HALLA UNIVERSITY</p><h1>한라 학과 체험</h1><p class="muted">선배 지우와 함께 캠퍼스를 탐험해요.<br>8개 학과 중 마음에 드는 전공을 골라 나만의 체험을 시작하세요.</p></div><div class="actions">'+button('start',icon('play')+'체험 시작',true)+button('events',icon('calendar')+'오프라인 체험 일정')+'</div></div><div class="infostrip"><span>▦ &nbsp;8개 학과</span><span>♧ &nbsp;안내자 지우</span><span>◇ &nbsp;시연용 임시 콘텐츠</span></div></section>')
+  view('<section class="window cover"><h1 class="cover-title"><img src="./assets/cover.webp" alt="한라 학과 체험"></h1><div class="cover-menu"><p>선배 지우와 함께 한라대 학과를 체험해요!</p><div class="actions">'+button('start','체험 시작 '+icon('play'),true)+button('events',icon('calendar')+'오프라인 체험 일정')+'</div></div></section>')
   on('start',namePage); on('events',()=>showEvents(root,home))
 }
 function dialog(line,portrait=guide.portrait) {
   return '<div class="dialog"><img class="portrait" src="'+escape(portrait)+'" alt=""><div><strong>선배 '+escape(guide.name)+'</strong><p>'+escape(line)+'</p></div></div>'
 }
 function namePage() {
-  view('<section class="panel inner"><p class="eyebrow">CAMPUS ADVENTURE</p><h1>어떻게 불러 줄까?</h1>'+dialog('반가워! 나는 오늘 체험을 함께할 선배 지우야.')+'<form><label for="nickname">별명</label><input id="nickname" maxlength="24" required placeholder="체험에서 사용할 별명" autocomplete="off" value="'+escape(nickname)+'"><p class="muted">실명은 필요 없어요. 별명은 이번 체험에서만 사용해요.</p><div class="nav">'+button('back','이전')+'<button class="primary">학과 선택</button></div></form></section>')
+  view('<section class="panel inner"><img class="banner" src="./assets/welcome.webp" alt=""><h1>어떻게 불러 줄까?</h1>'+dialog('체험하는 동안 내가 뭐라고 불러 주면 좋을까? 닉네임을 정해 줘!')+'<form><label for="nickname">닉네임</label><input id="nickname" maxlength="24" required placeholder="닉네임 입력" autocomplete="off" value="'+escape(nickname)+'"><div class="nav">'+button('back','이전')+'<button class="primary">학과 선택</button></div></form></section>')
   on('back',home)
   root.querySelector('form').onsubmit = e => {e.preventDefault(); const field = document.querySelector('#nickname'); nickname=field.value.trim(); if(!nickname){field.value='';field.reportValidity();return} selectDept()}
 }
-const symbols=['♡','▤','☆','⚙','▦','☼','♨','▣']
 function selectDept(){
-  view('<section class="panel inner"><p class="eyebrow">DEPARTMENT SELECT</p><h1>학과 선택</h1><p>'+escape(nickname)+'님, 어떤 학과를 체험해 볼까요?</p><div class="grid">'+departments.map((d,i)=>'<button class="dept" data-id="'+escape(d.id)+'" '+(d.status==='unavailable'?'disabled':'')+'><span class="symbol" aria-hidden="true">'+symbols[i%symbols.length]+'</span>'+escape(d.name)+(d.status==='unavailable'?' · 콘텐츠 준비 중':'')+'</button>').join('')+'</div><div class="nav">'+button('back','이전')+'</div></section>')
+  view('<section class="panel inner"><img class="banner" src="./assets/paths.webp" alt=""><h1>학과 선택</h1><p>'+escape(nickname)+'님, 어떤 학과를 체험해 볼까요?</p><div class="grid">'+departments.map(d=>'<button class="dept" data-id="'+escape(d.id)+'" '+(d.status==='unavailable'?'disabled':'')+'><img class="dept-icon" src="'+escape(d.icon)+'" alt="">'+escape(d.name)+(d.status==='unavailable'?' · 콘텐츠 준비 중':'')+'</button>').join('')+'</div><div class="nav">'+button('back','이전')+'</div></section>')
   root.querySelectorAll('.dept').forEach(b=>b.onclick=()=>{dept=departments.find(d=>d.id===b.dataset.id);restart()});on('back',namePage)
 }
 function restart(){index=0;answers={};intro()}
@@ -48,6 +47,7 @@ function play(){
     const selected=q.choices.find(c=>c.id===answers[q.id])
     root.querySelectorAll('.choice').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===selected?.id)))
     const r=document.querySelector('#response')
+    if(selected) root.querySelector('.choice[aria-pressed="true"]').after(r)
     r.className=selected?'feedback':''
     r.innerHTML=selected?'<strong>'+escape(selected.reaction)+'</strong><p>'+escape(selected.explanation)+'</p>':''
     document.querySelector('#next').disabled=!selected
@@ -59,7 +59,7 @@ function play(){
 }
 function result(){
   const rows=summary(dept,answers)
-  view('<section class="panel inner"><p class="eyebrow">'+status()+'</p><h1>'+escape(nickname)+'님의 체험 기록</h1><p><strong>'+escape(dept.name)+'</strong> · '+rows.length+' / '+dept.questions.length+'문항 완료</p>'+dialog('끝까지 함께해 줘서 고마워! 네가 고른 답을 돌아볼까?')+'<h2>나의 선택 내역</h2><ol class="resultlist">'+rows.map(r=>'<li><strong>'+escape(r.title)+'</strong>'+escape(r.text)+'</li>').join('')+'</ol><p class="feedback">'+escape(analysisText())+'</p><div class="sheet">'+button('save','결과 이미지 저장',true)+button('again','다시 체험')+button('other','다른 학과 선택')+button('booth','직접 상담해 보기')+'</div><div id="notice" role="status"></div></section>')
+  view('<section class="panel inner"><img class="banner" src="./assets/complete.webp" alt=""><p class="eyebrow">'+status()+'</p><h1>'+escape(nickname)+'님의 체험 기록</h1><p><strong>'+escape(dept.name)+'</strong> · '+rows.length+' / '+dept.questions.length+'문항 완료</p>'+dialog('끝까지 함께해 줘서 고마워! 네가 고른 답을 돌아볼까?')+'<h2>나의 선택 내역</h2><ol class="resultlist">'+rows.map(r=>'<li><strong>'+escape(r.title)+'</strong>'+escape(r.text)+'</li>').join('')+'</ol><p class="feedback">'+escape(analysisText())+'</p><div class="sheet">'+button('save','결과 이미지 저장',true)+button('again','다시 체험')+button('other','다른 학과 선택')+button('booth','직접 상담해 보기')+'</div><div id="notice" role="status"></div></section>')
   on('again',restart);on('other',selectDept);on('booth',()=>showBooths(root,dept,result,answers))
   on('save',async e=>{
     const btn=e.currentTarget,notice=document.querySelector('#notice')

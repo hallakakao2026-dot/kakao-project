@@ -37,7 +37,11 @@ export async function saveCard(nickname, dept, answers) {
   if (!context) throw new Error('결과 이미지를 만들 수 없습니다.')
   const rows = summary(dept, answers)
   const blocks = []
-  let y = 65
+  const banner = new Image()
+  banner.src = './assets/complete.webp'
+  await banner.decode()
+  const bannerHeight = Math.round((cardWidth - 44) * banner.height / banner.width)
+  let y = 45 + bannerHeight
   function addText(value, { size, bold = false, color = '#152956', gap = 0 }) {
     const font = (bold ? '700 ' : '400 ') + size + 'px ' + fontStack
     context.font = font
@@ -68,6 +72,7 @@ export async function saveCard(nickname, dept, answers) {
   context.fillRect(18, 18, cardWidth - 36, canvas.height - 36)
   context.fillStyle = '#fff'
   context.fillRect(22, 22, cardWidth - 44, canvas.height - 44)
+  context.drawImage(banner, 22, 22, cardWidth - 44, bannerHeight)
   context.fillStyle = '#c6e2ff'
   context.fillRect(pad, dividerY, cardWidth - 2 * pad, 3)
   context.textBaseline = 'top'
