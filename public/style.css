@@ -49,3 +49,4 @@
 }
 .choice[data-grade=correct]::after {background-image: url("./assets/grade-correct.svg");}
 .choice[data-grade=incorrect]::after {background-image: url("./assets/grade-incorrect.svg");}
+.rate{display:block;margin:10px 0;font-weight:700}.rate progress{display:block;width:100%;accent-color:#187448}.rate + .rate progress{accent-color:#ae3040}.rate + h2{margin-top:24px}

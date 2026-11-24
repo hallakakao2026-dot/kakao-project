@@ -1,5 +1,5 @@
 import { departments, guide } from './content.js'
-import { summary, analysisText, saveCard } from './results.js'
+import { quizRates, summary, analysisText, saveCard } from './results.js'
 import { showEvents, showBooths } from './events.js'
 
 const root = document.querySelector('#app')
@@ -42,7 +42,7 @@ function intro(){
 }
 function play(){
   const q=dept.questions[index]
-  view('<section class="panel"><div class="topline"><strong>'+escape(dept.name)+'</strong><span class="chip">'+(index+1)+' / '+dept.questions.length+'</span></div><p class="eyebrow">'+status()+'</p><h1>'+escape(q.title)+'</h1><div class="play"><div><img class="scene" src="'+escape(q.background)+'" alt="가상 캠퍼스"><p>'+escape(q.scene)+'</p>'+dialog(q.lesson,q.portrait)+'<small>연결 수업 · '+escape(q.course)+'</small></div><div><h2>'+escape(q.prompt)+'</h2>'+q.choices.map((c,i)=>'<button class="choice" aria-pressed="false" data-id="'+escape(c.id)+'">'+String(i+1).padStart(2,'0')+' &nbsp; '+escape(c.text)+'</button>').join('')+'<div id="response" aria-live="polite"></div><div class="nav">'+button('prev','이전')+button('next',index === dept.questions.length-1 ? '결과 보기' : '다음 문항',true)+'</div></div></div></section>')
+  view('<section class="panel"><div class="topline"><strong>'+escape(dept.name)+'</strong><span class="chip">'+(index+1)+' / '+dept.questions.length+'</span></div><p class="eyebrow">'+status()+'</p><h1>'+escape(q.title)+'</h1><div class="play"><div><img class="scene" src="'+escape(q.background)+'" alt=""><p>'+escape(q.scene)+'</p>'+dialog(q.lesson,q.portrait)+'<small>활동 주제 · '+escape(q.course)+'</small></div><div><h2>'+escape(q.prompt)+'</h2>'+q.choices.map((c,i)=>'<button class="choice" aria-pressed="false" data-id="'+escape(c.id)+'">'+String(i+1).padStart(2,'0')+' &nbsp; '+escape(c.text)+'</button>').join('')+'<div id="response" aria-live="polite"></div><div class="nav">'+button('prev','이전')+button('next',index === dept.questions.length-1 ? '결과 보기' : '다음 문항',true)+'</div></div></div></section>')
   function sync(){
     const selected=q.choices.find(c=>c.id===answers[q.id])
     root.querySelectorAll('.choice').forEach(button => {
@@ -81,7 +81,10 @@ function play(){
 }
 function result(){
   const rows=summary(dept,answers)
-  view('<section class="panel inner"><img class="banner" src="./assets/complete.webp" alt=""><p class="eyebrow">'+status()+'</p><h1>'+escape(nickname)+'님의 체험 기록</h1><p><strong>'+escape(dept.name)+'</strong></p>'+dialog('끝까지 함께해 줘서 고마워! 네가 고른 답을 돌아볼까?')+'<h2>나의 선택 내역</h2><ol class="resultlist">'+rows.map(r=>'<li><strong>'+escape(r.title)+'</strong>'+escape(r.text)+'</li>').join('')+'</ol><p class="feedback">'+escape(analysisText())+'</p><div class="sheet">'+button('save','결과 이미지 저장',true)+button('again','다시 체험')+button('other','다른 학과 선택')+button('booth','직접 상담해 보기')+'</div><div id="notice" role="status"></div></section>')
+  const chart = dept.status === 'final' ? '<h2>이번 퀴즈 결과</h2>' + quizRates(dept, answers).map(rate =>
+    '<label class="rate">'+rate.label+' '+rate.count+'개 ('+rate.percent+'%) <progress max="100" value="'+rate.percent+'"></progress></label>'
+  ).join('') : ''
+  view('<section class="panel inner"><img class="banner" src="./assets/complete.webp" alt=""><p class="eyebrow">'+status()+'</p><h1>'+escape(nickname)+'님의 체험 기록</h1><p><strong>'+escape(dept.name)+'</strong></p>'+dialog('끝까지 함께해 줘서 고마워! 네가 고른 답을 돌아볼까?')+chart+'<h2>나의 선택 내역</h2><ol class="resultlist">'+rows.map(r=>'<li><strong>'+escape(r.title)+'</strong>'+escape(r.text)+'</li>').join('')+'</ol><p class="feedback">'+escape(analysisText())+'</p><div class="sheet">'+button('save','결과 이미지 저장',true)+button('again','다시 체험')+button('other','다른 학과 선택')+button('booth','직접 상담해 보기')+'</div><div id="notice" role="status"></div></section>')
   on('again',restart);on('other',selectDept);on('booth',()=>showBooths(root,dept,result,answers))
   on('save',async e=>{
     const btn=e.currentTarget,notice=document.querySelector('#notice')

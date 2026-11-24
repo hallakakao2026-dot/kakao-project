@@ -6,6 +6,16 @@ export function summary(dept, answers) {
   })
 }
 
+export function quizRates(dept, answers) {
+  const correct = dept.questions.filter(q => answers[q.id] === q.recommended).length
+  const total = dept.questions.length
+  const percent = Math.round(100 * correct / total)
+  return [
+    { label: '정답', count: correct, percent },
+    { label: '오답', count: total - correct, percent: 100 - percent },
+  ]
+}
+
 export function analysisText() {
   return '성향 분석 기준 준비 중'
 }
@@ -58,6 +68,11 @@ export async function saveCard(nickname, dept, answers) {
   if (dept.status === 'demo') addText('시연용 임시 콘텐츠', { size: 19, color: '#2455a8' })
   y += 24
   const dividerY = y - 11
+  if (dept.status === 'final') {
+    for (const rate of quizRates(dept, answers)) {
+      addText(rate.label + ' ' + rate.count + '개 (' + rate.percent + '%)', { size: 22, bold: true })
+    }
+  }
   addText('나의 선택 내역', { size: 24, bold: true, gap: 10 })
   rows.forEach(({ title, text }, i) => {
     addText(String(i + 1).padStart(2, '0') + '   ' + title, { size: 19, bold: true, color: '#2455a8' })

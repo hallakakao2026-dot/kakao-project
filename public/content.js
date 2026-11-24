@@ -60,10 +60,54 @@ function makeDemoQuestions(departmentId, activity, card) {
 
 export const demoContent = Object.fromEntries(catalog.map(([id, , activity, card]) =>
   [id, makeDemoQuestions(id, activity, card)]));
-export const finalContent = {};
-export const finalIntros = {};
+function fireQuestion(id, title, scene, lesson, prompt, options, recommended) {
+  return {
+    id, title, scene, lesson, prompt, recommended,
+    course: '소방안전 기초와 진로 탐색',
+    background: './assets/fire-' + id + '.webp', portrait: guide.portrait,
+    choices: options.map(([key, text, explanation]) =>
+      choice(key, text, key === recommended ? '잘 짚었어!' : '이렇게 생각해 보자.', explanation)),
+  };
+}
+
+export const finalContent = {
+  'fire-safety': [
+    fireQuestion('triangle', '불이 타는 세 가지 조건',
+      '전시판의 삼각형에는 나무, 공기, 열을 나타내는 그림이 있어.',
+      '삼각형에서 꼭짓점 하나가 사라지면 어떻게 될지 생각해 봐.',
+      '불이 붙으려면 탈 물질, 산소, 열이 모두 있어야 한다. O일까, X일까?',
+      [['o', 'O', '탈 물질, 산소, 열을 연소의 3요소라고 해. 하나를 제거하면 연소가 지속되지 않아.'],
+       ['x', 'X', '연소의 3요소 모형에서는 세 가지가 모두 필요해. 탈 물질과 산소가 있어도 충분한 열이 없으면 불이 붙지 않아.']], 'o'),
+    fireQuestion('pan', '뚜껑을 덮는 이유',
+      '주방 모형에는 금속 뚜껑이 프라이팬을 빈틈없이 덮고 있어.',
+      '뚜껑을 덮기 전과 후에 팬 안으로 들어갈 수 있는 것이 어떻게 달라질까?',
+      '프라이팬에 난 불을 뚜껑으로 덮으면 무엇의 공급을 막을까?',
+      [['fuel', '탈 물질', '뚜껑을 덮어도 팬 속 기름은 남아 있어. 달라지는 것은 공기가 들어올 수 있는지야.'],
+       ['oxygen', '산소', '뚜껑이 공기를 차단하면 불에 산소가 공급되기 어려워져. 이를 질식소화라고 해.'],
+       ['heat', '열', '뚜껑을 덮는다고 뜨거운 팬이 바로 식지는 않아. 주된 효과는 산소 공급을 막는 거야.'],
+       ['power', '전기', '뚜껑은 전원을 끄는 장치가 아니야. 팬 안으로 들어오는 공기를 차단해.']], 'oxygen'),
+    fireQuestion('careers', '안전을 지키는 진로',
+      '진로 전시대에 소방 헬멧, 건물 점검표, 안전교육 자료가 놓여 있어.',
+      '현장 대응, 화재 예방, 안전교육 중 어떤 일과 연결되는지 살펴봐.',
+      '소방안전학과 졸업 후의 진로와 가장 관련이 적은 것은?',
+      [['officer', '소방공무원', '소방공무원은 화재 진압과 구조 등 현장 안전 업무를 맡아 전공과 관련이 깊어.'],
+       ['manager', '소방안전관리자', '건물의 화재 예방과 소방안전 관리는 소방안전 분야의 대표적인 업무야.'],
+       ['institute', '한국소방안전원', '한국소방안전원은 소방안전 교육을 하는 기관이라 이 분야와 관련이 있어.'],
+       ['gamer', '프로게이머', '프로게이머의 주된 활동은 게임 대회 출전이야. 나머지 세 가지는 화재 대응, 건물 안전관리, 안전교육과 이어져.']], 'gamer'),
+    fireQuestion('exit', '대피할 길 살피기',
+      '실내 훈련 공간에 소화기와 창문, 밖으로 통하는 출입문이 보여.',
+      '불이 커져도 바로 빠져나갈 수 있는 방향을 생각해 봐. 실제 화재에서 연기가 많거나 위험하면 대피가 먼저야.',
+      '건물 안에서 소화기를 쓸 때 어디를 등지고 서야 할까?',
+      [['fire', '불', '불을 등지면 불의 상태를 살피기 어렵고 대피로를 놓칠 수 있어.'],
+       ['door', '탈출할 문', '대피할 문을 등지고 있으면 상황이 위험해질 때 불을 지나지 않고 바로 빠져나갈 수 있어.'],
+       ['window', '창문', '창문이 안전한 출구라는 보장은 없어. 밖으로 대피할 수 있는 문을 기준으로 서야 해.'],
+       ['wall', '벽', '벽은 대피할 통로가 아니야. 뒤쪽에 대피할 문이 있는지 확인하는 게 중요해.']], 'door'),
+  ],
+};
+export const finalIntros = { 'fire-safety': '오늘은 연소의 원리부터 대피로와 진로까지, 네 가지 소방안전 퀴즈를 함께 풀어 보자!' };
+
 // Set each department independently to 'final' when approved questions are ready.
-export const contentMode = Object.fromEntries(catalog.map(([id]) => [id, 'demo']));
+export const contentMode = Object.fromEntries(catalog.map(([id]) => [id, id === 'fire-safety' ? 'final' : 'demo']));
 
 export const departments = catalog.map(([id, name, activity, card]) => {
   const mode = contentMode[id];
@@ -106,7 +150,7 @@ export function validateContent(items = departments) {
       const path = dept.id + '/' + q.id;
       for (const key of ['course', 'title', 'lesson', 'scene', 'prompt', 'background', 'portrait'])
         requireText(q[key], path + '.' + key);
-      if (!Array.isArray(q.choices) || q.choices.length !== 3) throw new Error('선택지 3개 필요: ' + path);
+      if (!Array.isArray(q.choices) || ![2, 3, 4].includes(q.choices.length)) throw new Error('선택지 2~4개 필요: ' + path);
       checkIds(q.choices, path);
       for (const c of q.choices) {
         for (const key of ['text', 'reaction', 'explanation']) requireText(c[key], path + '/' + c.id + '.' + key);
