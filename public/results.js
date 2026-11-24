@@ -56,7 +56,7 @@ export async function saveCard(nickname, dept, answers) {
   addText(nickname + '님의 체험 기록', { size: 38, bold: true })
   addText(dept.name, { size: 28, bold: true, gap: 10 })
   if (dept.status === 'demo') addText('시연용 임시 콘텐츠', { size: 19, color: '#2455a8' })
-  addText(rows.length + ' / ' + dept.questions.length + '문항 완료', { size: 21, gap: 24 })
+  y += 24
   const dividerY = y - 11
   addText('나의 선택 내역', { size: 24, bold: true, gap: 10 })
   rows.forEach(({ title, text }, i) => {
