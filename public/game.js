@@ -45,7 +45,10 @@ function play(){
   view('<section class="panel"><div class="topline"><strong>'+escape(dept.name)+'</strong><span class="chip">'+(index+1)+' / '+dept.questions.length+'</span></div><p class="eyebrow">'+status()+'</p><h1>'+escape(q.title)+'</h1><div class="play"><div><img class="scene" src="'+escape(q.background)+'" alt="가상 캠퍼스"><p>'+escape(q.scene)+'</p>'+dialog(q.lesson,q.portrait)+'<small>연결 수업 · '+escape(q.course)+'</small></div><div><h2>'+escape(q.prompt)+'</h2>'+q.choices.map((c,i)=>'<button class="choice" aria-pressed="false" data-id="'+escape(c.id)+'">'+String(i+1).padStart(2,'0')+' &nbsp; '+escape(c.text)+'</button>').join('')+'<div id="response" aria-live="polite"></div><div class="nav">'+button('prev','이전')+button('next',index === dept.questions.length-1 ? '결과 보기' : '다음 문항',true)+'</div></div></div></section>')
   function sync(){
     const selected=q.choices.find(c=>c.id===answers[q.id])
-    root.querySelectorAll('.choice').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===selected?.id)))
+    root.querySelectorAll('.choice').forEach(button => {
+      button.disabled = Boolean(selected)
+      button.setAttribute('aria-pressed', String(button.dataset.id === selected?.id))
+    })
     const r=document.querySelector('#response')
     const next = document.querySelector('#next')
     r.replaceChildren()
@@ -63,6 +66,7 @@ function play(){
   }
   root.querySelectorAll('.choice').forEach(button => {
     button.onclick = () => {
+      if (answers[q.id] || !button.isConnected) return
       answers[q.id] = button.dataset.id
       sync()
     }
