@@ -2,6 +2,7 @@ import { departments, guide } from './content.js'
 import { summary, analysisText, saveCard } from './results.js'
 import { showEvents, showBooths } from './events.js'
 
+const confirmed = new Set()
 const root = document.querySelector('#app')
 let nickname = '', dept, index = 0, answers = {}, png
 const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
@@ -34,7 +35,7 @@ function selectDept(){
   view('<section class="panel inner"><img class="banner" src="./assets/paths.webp" alt=""><h1>학과 선택</h1><p>'+escape(nickname)+'님, 어떤 학과를 체험해 볼까요?</p><div class="grid">'+departments.map(d=>'<button class="dept" data-id="'+escape(d.id)+'" '+(d.status==='unavailable'?'disabled':'')+'><img class="dept-icon" src="'+escape(d.icon)+'" alt="">'+escape(d.name)+(d.status==='unavailable'?' · 콘텐츠 준비 중':'')+'</button>').join('')+'</div><div class="nav">'+button('back','이전')+'</div></section>')
   root.querySelectorAll('.dept').forEach(b=>b.onclick=()=>{dept=departments.find(d=>d.id===b.dataset.id);restart()});on('back',namePage)
 }
-function restart(){index=0;answers={};intro()}
+function restart(){confirmed.clear();index=0;answers={};intro()}
 const status=()=>dept.status==='demo'?'시연용 임시 콘텐츠':'학과 체험'
 function intro(){
   view('<section class="window inner"><div class="windowbar">'+status()+'</div><img class="scene" src="'+escape(dept.background)+'" alt="가상 캠퍼스"><div class="panelbody"><h1>'+escape(dept.name)+'</h1>'+dialog(dept.intro,dept.portrait)+'<div class="nav">'+button('back','학과 선택')+button('go','체험 시작',true)+'</div></div></section>')
@@ -42,19 +43,43 @@ function intro(){
 }
 function play(){
   const q=dept.questions[index]
-  view('<section class="panel"><div class="topline"><strong>'+escape(dept.name)+'</strong><span class="chip">'+(index+1)+' / '+dept.questions.length+'</span></div><p class="eyebrow">'+status()+'</p><h1>'+escape(q.title)+'</h1><div class="play"><div><img class="scene" src="'+escape(q.background)+'" alt="가상 캠퍼스"><p>'+escape(q.scene)+'</p>'+dialog(q.lesson,q.portrait)+'<small>연결 수업 · '+escape(q.course)+'</small></div><div><h2>'+escape(q.prompt)+'</h2>'+q.choices.map((c,i)=>'<button class="choice" aria-pressed="false" data-id="'+escape(c.id)+'">'+String(i+1).padStart(2,'0')+' &nbsp; '+escape(c.text)+'</button>').join('')+'<div id="response" aria-live="polite"></div><div class="nav">'+button('prev','이전')+button('next',index===dept.questions.length-1?'결과 보기':'다음 문항',true)+'</div></div></div></section>')
+  view('<section class="panel"><div class="topline"><strong>'+escape(dept.name)+'</strong><span class="chip">'+(index+1)+' / '+dept.questions.length+'</span></div><p class="eyebrow">'+status()+'</p><h1>'+escape(q.title)+'</h1><div class="play"><div><img class="scene" src="'+escape(q.background)+'" alt="가상 캠퍼스"><p>'+escape(q.scene)+'</p>'+dialog(q.lesson,q.portrait)+'<small>연결 수업 · '+escape(q.course)+'</small></div><div><h2>'+escape(q.prompt)+'</h2>'+q.choices.map((c,i)=>'<button class="choice" aria-pressed="false" data-id="'+escape(c.id)+'">'+String(i+1).padStart(2,'0')+' &nbsp; '+escape(c.text)+'</button>').join('')+'<div id="response" aria-live="polite"></div><div class="nav">'+button('prev','이전')+button('next','정답 확인',true)+'</div></div></div></section>')
   function sync(){
     const selected=q.choices.find(c=>c.id===answers[q.id])
     root.querySelectorAll('.choice').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===selected?.id)))
     const r=document.querySelector('#response')
-    if(selected) root.querySelector('.choice[aria-pressed="true"]').after(r)
-    r.className=selected?'feedback':''
-    r.innerHTML=selected?'<strong>'+escape(selected.reaction)+'</strong><p>'+escape(selected.explanation)+'</p>':''
-    document.querySelector('#next').disabled=!selected
+    const checked = confirmed.has(q.id)
+    const next = document.querySelector('#next')
+    r.replaceChildren()
+    r.hidden = !checked
+    if (checked) {
+      root.querySelector('.choice[aria-pressed="true"]').after(r)
+      const correct = q.choices.find(choice => choice.id === q.recommended)
+      const verdict = selected.id === correct.id ? '정답이에요!' : '정답은 ‘'+correct.text+'’예요.'
+      r.className = 'feedback'
+      r.innerHTML = '<strong>'+escape(verdict)+'</strong><p>'+escape(selected.reaction)+'</p><p>'+escape(selected.explanation)+'</p>'
+    }
+    next.disabled = !selected
+    next.textContent = checked ? (index === dept.questions.length-1 ? '결과 보기' : '다음 문항') : '정답 확인'
   }
-  root.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{answers[q.id]=b.dataset.id;sync()})
+  root.querySelectorAll('.choice').forEach(button => {
+    button.onclick = () => {
+      if (answers[q.id] !== button.dataset.id) confirmed.delete(q.id)
+      answers[q.id] = button.dataset.id
+      sync()
+    }
+  })
   on('prev',e=>{if(!e.currentTarget.isConnected||e.detail>1)return;if(index){index--;play()}else intro()})
-  on('next',e=>{if(!e.currentTarget.isConnected||e.detail>1||!answers[q.id])return;if(index===dept.questions.length-1)result();else{index++;play()}})
+  on('next', e => {
+    if (!e.currentTarget.isConnected || e.detail > 1 || !answers[q.id]) return
+    if (!confirmed.has(q.id)) {
+      confirmed.add(q.id)
+      sync()
+      return
+    }
+    if (index === dept.questions.length-1) result()
+    else { index++; play() }
+  })
   sync()
 }
 function result(){
