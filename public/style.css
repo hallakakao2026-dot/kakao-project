@@ -37,7 +37,7 @@
 }
 .choice[aria-pressed=true][data-grade=incorrect] {background: #fff0f0; border-color: #b02335;}
 
-.choice[aria-pressed=true][data-grade]::after {
+.choice[data-grade]::after {
   content: "";
   display: inline-block;
   width: 1.75rem;
@@ -50,3 +50,5 @@
 .choice[data-grade=correct]::after {background-image: url("./assets/grade-correct.svg");}
 .choice[data-grade=incorrect]::after {background-image: url("./assets/grade-incorrect.svg");}
 .rate{display:block;margin:10px 0;font-weight:700}.rate progress{display:block;width:100%;accent-color:#187448}.rate + .rate progress{accent-color:#ae3040}.rate + h2{margin-top:24px}
+
+.choice[data-grade=correct] {background: #eaf8f0; border-color: #227559;}

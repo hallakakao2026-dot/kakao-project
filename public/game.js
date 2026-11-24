@@ -58,6 +58,11 @@ function play(){
       active.dataset.grade = selected.id === q.recommended ? 'correct' : 'incorrect'
       active.after(r)
       const correct = q.choices.find(choice => choice.id === q.recommended)
+      if (selected.id !== correct.id) {
+        const correctButton = Array.from(root.querySelectorAll('.choice')).find(button => button.dataset.id === correct.id)
+        correctButton.dataset.grade = 'correct'
+        correctButton.append(' · 정답')
+      }
       const verdict = selected.id === correct.id ? '정답이에요!' : '오답이에요. 정답은 ‘'+correct.text+'’예요.'
       r.className = 'feedback'
       r.innerHTML = '<strong>'+escape(verdict)+'</strong><p>'+escape(selected.reaction)+'</p><p>'+escape(selected.explanation)+'</p>'
